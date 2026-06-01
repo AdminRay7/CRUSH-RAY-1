@@ -3,6 +3,9 @@
 <div align="center">
   <img src="assets/bot_image.jpg" alt="CRUSH RAY BOT" width="200">
   <h3>A Powerful WhatsApp Bot with 50+ Commands</h3>
+  
+  [![GitHub Repository](https://img.shields.io/badge/GitHub-CRUSH--RAY--BOT-blue?style=for-the-badge&logo=github)](https://github.com/yourusername/crush-ray-bot.git)
+  [![WhatsApp Channel](https://img.shields.io/badge/WhatsApp-Channel-green?style=for-the-badge&logo=whatsapp)](https://whatsapp.com/channel/0029VbCne5677qVRVvdVAn1b)
 </div>
 
 ## 👤 Bot Information
@@ -13,6 +16,20 @@
 | **Developer** | RAY |
 | **Contact** | 0757829372 |
 | **Version** | 1.0.0 |
+| **Repository** | https://github.com/yourusername/crush-ray-bot.git |
+| **WhatsApp Channel** | https://whatsapp.com/channel/0029VbCne5677qVRVvdVAn1b |
+
+## 📢 Join Our WhatsApp Channel
+Stay updated with the latest features, commands, and announcements!
+
+**Channel Link:** https://whatsapp.com/channel/0029VbCne5677qVRVvdVAn1b
+
+**Benefits of joining:**
+- Latest bot updates
+- New commands announcements
+- Bug fixes & improvements
+- Tutorials & tips
+- 24/7 support
 
 ## ✨ Features
 
@@ -21,6 +38,8 @@
 - `.ping` - Check bot response time
 - `.alive` - Check bot status
 - `.owner` - Contact owner
+- `.github` - Get GitHub repository
+- `.channel` - Join WhatsApp channel
 - `.mode` - Toggle public/private mode
 
 ### 🛠️ Moderation
