@@ -36,8 +36,8 @@ const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
 const { isSudo } = require('./lib/index');
 const isOwnerOrSudo = require('./lib/isOwner');
-const { autotypingCommand, isAutotypingEnabled, handleAutotypingForMessage, handleAutotypingForCommand, showTypingAfterCommand } = require('./commands/autotyping');
-const { autoreadCommand, isAutoreadEnabled, handleAutoread } = require('./commands/autoread');
+
+// REMOVED: autotyping and autoread imports
 
 // Command imports
 const tagAllCommand = require('./commands/tagall');
@@ -184,8 +184,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];
         if (!message?.message) return;
 
-        // Handle autoread functionality
-        await handleAutoread(sock, message);
+        // REMOVED: handleAutoread
 
         // Store message for antidelete feature
         if (message.message) {
@@ -249,7 +248,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             const data = JSON.parse(fs.readFileSync('./data/messageCount.json'));
             if (typeof data.isPublic === 'boolean') isPublic = data.isPublic;
         } catch (error) {
-            // Default to public mode
             isPublic = true;
         }
         
@@ -275,7 +273,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         // CRUSH RAY greeting in private chat
         if (!isGroup && (userMessage === 'hi' || userMessage === 'hello' || userMessage === 'crush' || userMessage === 'ray' || userMessage === 'bot' || userMessage === 'hey')) {
             await sock.sendMessage(chatId, {
-                text: `💖 *CRUSH RAY BOT* 💖\n\nHi! I'm CRUSH RAY, your WhatsApp assistant.\n👤 Owner: PRESENTER RAY\n👨‍💻 Developer: RAY\n📞 Number: 0794376595\n📢 Channel: ${global.channelLink}\n🔧 Type *.menu* to see all 63+ commands!\n\nMade with 💖 by RAY`,
+                text: `💖 *CRUSH RAY BOT* 💖\n\nHi! I'm CRUSH RAY, your WhatsApp assistant.\n👤 Owner: PRESENTER RAY\n👨‍💻 Developer: RAY\n📞 Number: 0794376595\n📢 Channel: ${global.channelLink}\n🔧 Type *.menu* to see all 85+ commands!\n\nMade with 💖 by RAY`,
                 ...channelInfo
             });
             return;
@@ -306,7 +304,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
 
         // Check for command prefix
         if (!userMessage.startsWith('.')) {
-            await handleAutotypingForMessage(sock, chatId, userMessage);
+            // REMOVED: handleAutotypingForMessage
 
             if (isGroup) {
                 await handleTagDetection(sock, chatId, message, senderId);
@@ -329,7 +327,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));
 
         // List of owner commands
-        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.autotyping', '.autoread', '.pmblocker', '.anticall', '.sudo', '.update'];
+        const ownerCommands = ['.mode', '.autostatus', '.antidelete', '.cleartmp', '.setpp', '.clearsession', '.areact', '.autoreact', '.pmblocker', '.anticall', '.sudo', '.update'];
         const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));
 
         let isSenderAdmin = false;
@@ -373,9 +371,9 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const command = args[0].toLowerCase();
         const commandArgs = args.slice(1);
 
-        // ========== ALL 63+ COMMAND HANDLERS ==========
+        // ========== ALL COMMAND HANDLERS ==========
         
-        // 📱 GENERAL COMMANDS (1-10)
+        // 📱 GENERAL COMMANDS
         if (command === '.menu' || command === '.help') {
             await helpCommand(sock, chatId, message, commandArgs);
         }
@@ -400,11 +398,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         else if (command === '.mode') {
             await modeCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
         }
-        else if (command === '.settings') {
-            await settingsCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
-        }
         
-        // 🛠️ MODERATION COMMANDS (11-25)
+        // 🛠️ MODERATION COMMANDS
         else if (command === '.ban') {
             await banCommand(sock, chatId, message);
         }
@@ -459,7 +454,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await resetlinkCommand(sock, chatId, isGroup, isSenderAdmin, isBotAdmin);
         }
         
-        // 🔗 ANTI-SPAM COMMANDS (26-32)
+        // 🔗 ANTI-SPAM COMMANDS
         else if (command === '.antilink') {
             await handleAntilinkCommand(sock, chatId, commandArgs, isGroup, isSenderAdmin);
         }
@@ -479,7 +474,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await handleAntideleteCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
         }
         
-        // 🎨 MEDIA COMMANDS (33-40)
+        // 🎨 MEDIA COMMANDS
         else if (command === '.sticker') {
             await stickerCommand(sock, chatId, message, commandArgs, isGroup, senderId);
         }
@@ -506,11 +501,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
                 await sock.sendMessage(chatId, { text: '❌ Please reply to a sticker with .simage to convert it.', ...channelInfo }, { quoted: message });
             }
         }
-        else if (command === '.stickercrop') {
-            await stickercropCommand(sock, chatId, message);
-        }
         
-        // 🎵 DOWNLOADER COMMANDS (41-48)
+        // 🎵 DOWNLOADER COMMANDS
         else if (command === '.play') {
             await playCommand(sock, chatId, message, commandArgs);
         }
@@ -532,11 +524,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         else if (command === '.spotify') {
             await spotifyCommand(sock, chatId, commandArgs);
         }
-        else if (command === '.igs') {
-            await igsCommand(sock, chatId, commandArgs);
-        }
         
-        // 🤖 AI COMMANDS (49-55)
+        // 🤖 AI COMMANDS
         else if (command === '.ai') {
             await aiCommand(sock, chatId, message, commandArgs);
         }
@@ -546,12 +535,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
         else if (command === '.imagine') {
             await imagineCommand(sock, chatId, commandArgs);
         }
-        else if (command === '.remini') {
-            await reminiCommand(sock, chatId, message);
-        }
-        else if (command === '.removebg') {
-            await removebgCommand(sock, chatId, message);
-        }
         else if (command === '.tts') {
             await ttsCommand(sock, chatId, commandArgs);
         }
@@ -559,7 +542,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await handleTranslateCommand(sock, chatId, commandArgs);
         }
         
-        // 📰 UTILITY COMMANDS (56-62)
+        // 📰 UTILITY COMMANDS
         else if (command === '.weather') {
             await weatherCommand(sock, chatId, commandArgs);
         }
@@ -578,11 +561,8 @@ async function handleMessages(sock, messageUpdate, printLog) {
         else if (command === '.lyrics') {
             await lyricsCommand(sock, chatId, commandArgs);
         }
-        else if (command === '.ss') {
-            await handleSsCommand(sock, chatId, commandArgs);
-        }
         
-        // 💖 FUN COMMANDS (63-72)
+        // 💖 FUN COMMANDS
         else if (command === '.flirt') {
             await flirtCommand(sock, chatId, message);
         }
@@ -614,7 +594,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await memeCommand(sock, chatId);
         }
         
-        // 👥 GROUP INFO COMMANDS (73-76)
+        // 👥 GROUP INFO COMMANDS
         else if (command === '.groupinfo') {
             await groupInfoCommand(sock, chatId, isGroup);
         }
@@ -625,24 +605,12 @@ async function handleMessages(sock, messageUpdate, printLog) {
             await topMembers(sock, chatId, commandArgs);
         }
         
-        // 🎮 GAME COMMANDS (77-80)
+        // 🎮 GAME COMMANDS
         else if (command === '.tictactoe') {
             await tictactoeCommand(sock, chatId, senderId, commandArgs);
         }
-        else if (command === '.hangman') {
-            await startHangman(sock, chatId, senderId);
-        }
-        else if (command === '.trivia') {
-            await startTrivia(sock, chatId, senderId);
-        }
         
-        // ⚙️ AUTO SETTINGS COMMANDS (81-85)
-        else if (command === '.autoread') {
-            await autoreadCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
-        }
-        else if (command === '.autotyping') {
-            await autotypingCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
-        }
+        // ⚙️ AUTO SETTINGS COMMANDS
         else if (command === '.autostatus') {
             await autoStatusCommand(sock, chatId, commandArgs, message.key.fromMe || senderIsOwnerOrSudo);
         }
@@ -656,7 +624,7 @@ async function handleMessages(sock, messageUpdate, printLog) {
         // Unknown command
         else if (userMessage.startsWith('.')) {
             await sock.sendMessage(chatId, {
-                text: `❌ Unknown command: ${command}\n\nType .menu to see all 63+ commands available.\n\n💖 *CRUSH RAY BOT*`,
+                text: `❌ Unknown command: ${command}\n\nType .menu to see all 85+ commands available.\n\n💖 *CRUSH RAY BOT*`,
                 ...channelInfo
             }, { quoted: message });
         }
@@ -680,7 +648,7 @@ async function handleGroupParticipantUpdate(sock, update) {
         
         if (action === 'add') {
             for (const participant of participants) {
-                const welcomeText = `💖 *WELCOME TO CRUSH RAY BOT GROUP* 💖\n\n@${participant.split('@')[0]}\n\nWelcome to the group! Enjoy using CRUSH RAY bot.\nType .menu to see all 63+ commands.\n\n📢 Channel: ${global.channelLink}\n\nMade with 💖 by PRESENTER RAY`;
+                const welcomeText = `💖 *WELCOME TO CRUSH RAY BOT GROUP* 💖\n\n@${participant.split('@')[0]}\n\nWelcome to the group! Enjoy using CRUSH RAY bot.\nType .menu to see all 85+ commands.\n\n📢 Channel: ${global.channelLink}\n\nMade with 💖 by PRESENTER RAY`;
                 await sock.sendMessage(id, { text: welcomeText, mentions: [participant], ...channelInfo });
             }
         }
@@ -712,10 +680,8 @@ async function handleGroupParticipantUpdate(sock, update) {
 
 async function handleStatus(sock, statusUpdate) {
     try {
-        // Auto-status view feature
         const autoStatusConfig = JSON.parse(fs.readFileSync('./data/autoStatus.json'));
         if (autoStatusConfig.enabled) {
-            // Auto-view status updates if enabled
             if (statusUpdate.messages) {
                 for (const msg of statusUpdate.messages) {
                     if (msg.key && msg.key.remoteJid === 'status@broadcast') {
@@ -725,7 +691,7 @@ async function handleStatus(sock, statusUpdate) {
             }
         }
     } catch (err) {
-        // Silently fail - status handling is optional
+        // Silently fail
     }
 }
 
