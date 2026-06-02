@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CRUSH RAY BOT - WhatsApp Bot</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .status {
+            text-align: center;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .status-badge.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-badge.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .qr-container img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        
+        .pair-section {
+            margin-top: 10px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .pair-code-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .code {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            color: white;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .info-box h4 {
+            color: #004085;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ol {
+            margin-left: 20px;
+            color: #004085;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px;
+            }
+            .code {
+                font-size: 28px;
+                letter-spacing: 5px;
+            }
+            .btn {
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card header">
+            <h1>💖 CRUSH RAY BOT</h1>
+            <p>WhatsApp Bot by PRESENTER RAY</p>
+        </div>
+        
+        <div class="card status">
+            <div id="statusBadge" class="status-badge offline">🔴 Offline</div>
+            <p id="statusText" style="margin-top: 10px; color: #666;">Bot is disconnected</p>
+        </div>
+        
+        <div id="qrCard" class="card hidden">
+            <div class="qr-container">
+                <h3>📱 Scan QR Code</h3>
+                <img id="qrImage" src="" alt="QR Code">
+                <p style="margin-top: 10px; color: #666;">Open WhatsApp → Settings → Linked Devices → Link a Device → Scan QR</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 15px;">🔐 Pairing Code Method</h3>
+            <div class="pair-section">
+                <div class="input-group">
+                    <input type="tel" id="phoneNumber" placeholder="Phone number (e.g., 254794376595)" value="254794376595">
+                    <button class="btn btn-primary" onclick="requestPairingCode()">Get Code</button>
+                </div>
+            </div>
+            
+            <div id="pairCodeCard" class="hidden">
+                <div class="pair-code-display">
+                    <h3 style="color: white; margin-bottom: 10px;">🔐 Your Pairing Code</h3>
+                    <div id="pairCodeDisplay" class="code"></div>
+                    <button class="btn btn-success" onclick="copyCode()" style="margin-top: 10px;">📋 Copy Code</button>
+                    <p style="color: rgba(255,255,255,0.8); margin-top: 10px; font-size: 12px;">Valid for 5 minutes</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="info-box">
+                <h4>📖 How to Use Pairing Code:</h4>
+                <ol>
+                    <li>Enter your WhatsApp number with country code (e.g., 254794376595)</li>
+                    <li>Click "Get Code" button</li>
+                    <li>Open WhatsApp on your phone</li>
+                    <li>Go to <strong>Settings → Linked Devices → Link a Device</strong></li>
+                    <li>Tap <strong>"Link with phone number instead"</strong></li>
+                    <li>Enter the 8-character code shown above</li>
+                    <li>Wait 5-10 seconds for connection</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="info-box" style="background: #fff3e0;">
+                <h4 style="color: #856404;">💡 Quick Tips:</h4>
+                <ul style="margin-left: 20px; color: #856404;">
+                    <li>Make sure WhatsApp is updated to latest version</li>
+                    <li>If code doesn't work, restart the bot and try again</li>
+                    <li>Code expires after 5 minutes</li>
+                    <li>Keep this page open while pairing</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💖 CRUSH RAY BOT | Owner: PRESENTER RAY | Number: 0794376595</p>
+            <p>Channel: https://whatsapp.com/channel/0029VbCne5677qVRVvdVAn1b</p>
+            <p>Made with 💖 by RAY</p>
+        </div>
+    </div>
+    
+    <script>
+        const socket = io();
+        
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('get-status');
+        });
+        
+        socket.on('status', (data) => {
+            updateStatus(data.connected);
+            if (data.qrCode && !data.connected) {
+                document.getElementById('qrImage').src = data.qrCode;
+                document.getElementById('qrCard').classList.remove('hidden');
+            } else {
+                document.getElementById('qrCard').classList.add('hidden');
+            }
+        });
+        
+        socket.on('connected', (data) => {
+            updateStatus(true);
+            document.getElementById('qrCard').classList.add('hidden');
+            document.getElementById('pairCodeCard').classList.add('hidden');
+            showToast('✅ Bot connected successfully!', 'success');
+        });
+        
+        socket.on('disconnected', () => {
+            updateStatus(false);
+            showToast('🔴 Bot disconnected', 'error');
+        });
+        
+        socket.on('qr', (qrData) => {
+            document.getElementById('qrImage').src = qrData;
+            document.getElementById('qrCard').classList.remove('hidden');
+        });
+        
+        socket.on('pair-code', (data) => {
+            if (data.success) {
+                document.getElementById('pairCodeDisplay').innerHTML = data.code;
+                document.getElementById('pairCodeCard').classList.remove('hidden');
+                showToast('🔐 Pairing code generated!', 'success');
+            } else {
+                showToast('❌ Error: ' + data.error, 'error');
+            }
+        });
+        
+        function updateStatus(connected) {
+            const badge = document.getElementById('statusBadge');
+            const text = document.getElementById('statusText');
+            
+            if (connected) {
+                badge.className = 'status-badge online';
+                badge.innerHTML = '🟢 Online';
+                text.innerHTML = 'CRUSH RAY Bot is connected and ready! Type .menu in WhatsApp';
+            } else {
+                badge.className = 'status-badge offline';
+                badge.innerHTML = '🔴 Offline';
+                text.innerHTML = 'Bot is disconnected. Use pairing code above to connect.';
+            }
+        }
+        
+        function requestPairingCode() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if (!phoneNumber) {
+                showToast('Please enter a phone number', 'error');
+                return;
+            }
+            
+            document.getElementById('pairCodeCard').classList.add('hidden');
+            showToast('📱 Requesting pairing code...', 'info');
+            socket.emit('request-pair', { phoneNumber: phoneNumber });
+        }
+        
+        function copyCode() {
+            const code = document.getElementById('pairCodeDisplay').innerText;
+            navigator.clipboard.writeText(code);
+            showToast('📋 Code copied to clipboard!', 'success');
+        }
+        
+        function showToast(message, type) {
+            // Create toast element
+            const toast = document.createElement('div');
+            toast.style.position = 'fixed';
+            toast.style.bottom = '20px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.padding = '12px 20px';
+            toast.style.borderRadius = '10px';
+            toast.style.color = 'white';
+            toast.style.fontSize = '14px';
+            toast.style.zIndex = '1000';
+            toast.style.animation = 'fadeInOut 2s ease';
+            
+            if (type === 'success') {
+                toast.style.background = '#28a745';
+            } else if (type === 'error') {
+                toast.style.background = '#dc3545';
+            } else {
+                toast.style.background = '#17a2b8';
+            }
+            
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        
+        // Add animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Auto refresh status every 5 seconds
+        setInterval(() => {
+            socket.emit('get-status');
+        }, 5000);
+    </script>
+</body>
+</html>
